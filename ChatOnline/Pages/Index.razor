@@ -1,45 +1,81 @@
 ﻿@page "/"
-@inject NavigationManager NavManager
-
 <PageTitle>chat.online</PageTitle>
 
-<div class="card" style="width: 50vw; margin: 1rem auto 0 auto ">
-    <img class="card-img-top" src="https://kartinkof.club/uploads/posts/2022-06/1655970451_44-kartinkof-club-p-kartinki-s-nadpisyu-ura-ya-doma-44.png" alt="Card image cap">
-    <div class="card-body">
-        <h5 class="card-title">Auth</h5>
-        <div>
-            <div class="form-group">
-                <label for="exampleInputEmail1">Email address</label>
-                <input @bind-value="_newUser.Username" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Username">
-                <small id="emailHelp" class="form-text text-muted"></small>
-            </div>
-            <div class="form-group">
-                <label for="exampleInputPassword1">Password</label>
-                <input @bind-value="_newUser.Password" type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" style=" margin-bottom: 8px;">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Auth</h5>
+                    <div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Email address</label>
+                            <input @bind="_newUser.Username" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Username">
+                            <small id="emailHelp" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1">Password</label>
+                            <input @bind="_newUser.Password" type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" style="margin-bottom: 8px;">
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <button @onclick="@(e => Go2Chat())" class="btn btn-primary">Login</button>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="d-flex flex-column">
-            <a @onclick="Go2Chat" href="#" class="btn btn-primary">Go somewhere</a>
-        </div>    
-    </div>
-    <div class="d-flex flex-column">
-        <a @onclick="reg" href="#" class="btn btn-primary">регистрация</a>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Registration</h5>
+                    <div>
+                        <div class="form-group">
+                            <label for="exampleInputEmail2">Email address</label>
+                            <input @bind="_newUser.Username" type="email" class="form-control" id="exampleInputEmail2" aria-describedby="emailHelp" placeholder="Username">
+                            <small id="emailHelp" class="form-text text-muted"></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword2">Password</label>
+                            <input @bind="_newUser.Password" type="password" class="form-control" id="exampleInputPassword2" placeholder="Password" style="margin-bottom: 8px;">
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <button @onclick="reg" class="btn btn-primary">Register</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @code {
     private User _newUser = new User("", "");
+    @inject NavigationManager NavigationManager
+
+   
+    private List<User> _registeredUsers = new List<User>();
 
     public void reg()
     {
-        
+            _registeredUsers.Add(_newUser);
     }
-
     public void Go2Chat()
     {
-        NavManager.NavigateTo("/chat");
+        var user = _registeredUsers.FirstOrDefault(u => u.Username == _newUser.Username && u.Password == _newUser.Password);
+        if (user != null)
+        {
+            // Authentication successful, redirect to chat page
+            NavigationManager.NavigateTo("chat");
+        }
+        else
+        {
+            // Authentication failed, show error message or redirect to login page
+            // You can add error handling logic here
+        }
     }
+    
 
+   
     class User
     {
         public User(string username, string password)
@@ -48,7 +84,6 @@
             Username = username;
             Password = password;
         }
-
         public string Id { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
