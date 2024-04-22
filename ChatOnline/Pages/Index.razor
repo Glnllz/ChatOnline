@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject NavigationManager NavManager
 <PageTitle>chat.online</PageTitle>
 
 <div class="container">
@@ -20,62 +21,94 @@
                     </div>
                     <div class="d-flex flex-column">
                         <button @onclick="@(e => Go2Chat())" class="btn btn-primary">Login</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Registration</h5>
-                    <div>
-                        <div class="form-group">
-                            <label for="exampleInputEmail2">Email address</label>
-                            <input @bind="_newUser.Username" type="email" class="form-control" id="exampleInputEmail2" aria-describedby="emailHelp" placeholder="Username">
-                            <small id="emailHelp" class="form-text text-muted"></small>
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleInputPassword2">Password</label>
-                            <input @bind="_newUser.Password" type="password" class="form-control" id="exampleInputPassword2" placeholder="Password" style="margin-bottom: 8px;">
-                        </div>
+                        @if (show)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                Такого пользователя нет!
+                            </div>
+                        }
                     </div>
                     <div class="d-flex flex-column">
-                        <button @onclick="reg" class="btn btn-primary">Register</button>
+                        <a @onclick="reg" href="#" class="btn btn-primary">регистрация</a>
                     </div>
                 </div>
             </div>
         </div>
+       
+        @if (showRegistrationForm)
+        {
+            <div>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Email address</label>
+                    <input @bind="_newUser.Username" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Password</label>
+                    <input @bind="_newUser.Password" type="password" class="form-control" id="exampleInputPassword1" placeholder="Password" style=" margin-bottom: 8px;">
+                </div>
+                <button @onclick="RegisterUser" class="btn btn-primary">Register</button>
+                @if (showEmptyFieldsMessage)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        Пожалуйста, заполните все поля!
+                    </div>
+                }
+                @if (showSuccessMessage)
+                {
+                    <div class="alert alert-success" role="alert">
+                        Вы успешно зарегистрировались!
+                    </div>
+                }
+            </div>
+        }
     </div>
 </div>
 
 @code {
     private User _newUser = new User("", "");
+    private bool showRegistrationForm = false;
+    private bool showSuccessMessage = false;
+    private bool showEmptyFieldsMessage = false;
+    private bool show = false;
+    private List<User> RegisteredUsers = new List<User>();
     @inject NavigationManager NavigationManager
 
-   
-    private List<User> _registeredUsers = new List<User>();
+    private string usernameError = "";
+    private string passwordError = "";
 
-    public void reg()
+    public void RegisterUser()
     {
-            _registeredUsers.Add(_newUser);
-    }
-    public void Go2Chat()
-    {
-        var user = _registeredUsers.FirstOrDefault(u => u.Username == _newUser.Username && u.Password == _newUser.Password);
-        if (user != null)
+        if (string.IsNullOrWhiteSpace(_newUser.Username) || string.IsNullOrWhiteSpace(_newUser.Password))
         {
-            // Authentication successful, redirect to chat page
-            NavigationManager.NavigateTo("chat");
+            showEmptyFieldsMessage = true;
         }
         else
         {
-            // Authentication failed, show error message or redirect to login page
-            // You can add error handling logic here
+            RegisteredUsers.Add(_newUser);
+            showSuccessMessage = true;
         }
     }
-    
-
-   
+    public void ToggleRegistrationForm()
+    {
+        showRegistrationForm = !showRegistrationForm;
+    }
+    public void reg()
+    {
+        ToggleRegistrationForm();
+    }
+    private List<User> _registeredUsers = new List<User>();
+    public void Go2Chat()
+    {
+        var user = RegisteredUsers.FirstOrDefault(u => u.Username == _newUser.Username && u.Password == _newUser.Password);
+        if (user != null)
+        {
+            NavManager.NavigateTo("/chat");
+        }
+        else
+        {
+            show = true;
+        }
+    }
     class User
     {
         public User(string username, string password)
@@ -88,4 +121,12 @@
         public string Username { get; set; }
         public string Password { get; set; }
     }
+    private bool showModal = false;
+
+    public void window()
+    {
+        _registeredUsers.Add(_newUser);
+        showModal = true;
+    }
 }
+  
